@@ -118,4 +118,5 @@ class AuthController extends Controller
 
         return null;
     }
+    
 }
