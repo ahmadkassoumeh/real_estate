@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
+use App\Enums\UserStatusEnum;
+use App\Utilities\ApiResponseService;
+use App\Http\Resources\UserResource;
 
 class AuthController extends Controller
 {
@@ -14,17 +18,23 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'nullable|email|unique:users,email',
             'username' => 'required|string|max:50|unique:users,username',
-            'first_name' => 'nullable|string|max:100',
-            'last_name' => 'nullable|string|max:100',
+            'first_name' => 'required|string|max:100',
+            'last_name' => 'required|string|max:100',
             'date_of_birth' => 'nullable|date',
             'password' => 'required|min:6|confirmed',
+
+            'role' => 'required|in:owner,tenant',
+
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'id_card_image' => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 422);
+            return ApiResponseService::validateResponse(
+                $validator->errors()
+            );
         }
+
 
         $user = User::create([
             'email' => $request->email,
@@ -33,16 +43,45 @@ class AuthController extends Controller
             'last_name' => $request->last_name,
             'date_of_birth' => $request->date_of_birth,
             'password' => Hash::make($request->password),
+            'status' => UserStatusEnum::PENDING,
         ]);
+
+        if ($request->hasFile('profile_image')) {
+            $profilePath = $request->file('profile_image')->store(
+                "{$user->id}/profile",
+                'users'
+            );
+
+            $user->update([
+                'profile_image' => $profilePath
+            ]);
+        }
+
+        if ($request->hasFile('id_card_image')) {
+            $idCardPath = $request->file('id_card_image')->store(
+                "{$user->id}/id-card",
+                'users'
+            );
+
+            $user->update([
+                'id_card_image' => $idCardPath
+            ]);
+        }
+
+
+        $user->assignRole($request->role);
 
         $token = $user->createToken('API Token')->accessToken;
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-            'msg' => "تم التسجيل بنجاح ",
-        ], 201);
+        return ApiResponseService::createdResponse(
+            data: [
+                'user' => new UserResource($user),
+                'token' => $token,
+            ]
+        );
+        
     }
+
 
 
     public function login(Request $request)
@@ -118,5 +157,4 @@ class AuthController extends Controller
 
         return null;
     }
-    
 }
