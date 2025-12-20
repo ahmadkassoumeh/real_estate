@@ -62,15 +62,17 @@ return [
 
         'users' => [
             'driver' => 'local',
-            'root' => storage_path('app/users'),
+            'root' => storage_path('app/public/users'),
             'visibility' => 'private',
         ],
 
         'apartment' => [
             'driver' => 'local',
-            'root' => storage_path('app/apartment'),
-            'visibility' => 'private',
+            'root' => storage_path('app/public/apartment'),
+            'url' => env('APP_URL') . '/storage/apartment',
+            'visibility' => 'public',
         ],
+
 
 
     ],

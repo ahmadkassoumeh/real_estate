@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\ApartmentController;
 
 
 // 🔓 بدون توكن
@@ -15,4 +15,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('user', [AuthController::class, 'user']);
     Route::get('status', [AuthController::class, 'status']);
+    Route::get('dashboard', [ApartmentController::class, 'dashboard']);
+
 });
