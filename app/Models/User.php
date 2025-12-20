@@ -14,8 +14,7 @@ use App\Enums\UserStatusEnum;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
-    use HasRoles;
+    use HasFactory, Notifiable, HasApiTokens , HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -30,6 +29,7 @@ class User extends Authenticatable
         'date_of_birth',
         'id_card_image',
         'profile_image',
+        'status',
         'password',
     ];
 

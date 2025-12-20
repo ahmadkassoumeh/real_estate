@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Enums\UserStatusEnum;
 
 class OwnerSeeder extends Seeder
 {
@@ -16,6 +17,8 @@ class OwnerSeeder extends Seeder
             'first_name' => 'Owner',
             'last_name' => 'User',
             'password' => Hash::make('123456'),
+            'status'     => UserStatusEnum::APPROVED,
+
         ]);
 
         $owner->assignRole('owner');

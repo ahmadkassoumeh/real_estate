@@ -61,4 +61,23 @@ class Apartment extends Model
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now());
     }
+
+    public function mainImage()
+    {
+        return $this->hasOne(ApartmentImage::class)->where('is_main', true);
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->whereHas('area', function ($q) {
+            $q->where('is_featured', true);
+        });
+    }
+
+    public function scopeLatestApartments($query)
+    {
+        return $query->latest();
+    }
+
+    
 }

@@ -79,7 +79,6 @@ class AuthController extends Controller
                 'token' => $token,
             ]
         );
-        
     }
 
 
@@ -92,26 +91,37 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 422);
+            return ApiResponseService::validateResponse(
+                $validator->errors()
+            );
         }
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'بيانات الدخول غير صحيحة'
-            ], 401);
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            return ApiResponseService::unauthorizedResponse(
+                msg: 'بيانات الدخول غير صحيحة'
+            );
+        }
+
+        // 👈 هون المهم
+        if ($user->status !== UserStatusEnum::APPROVED) {
+            return ApiResponseService::unauthorizedResponse(
+                msg: 'الحساب بانتظار موافقة الإدارة'
+            );
         }
 
         $token = $user->createToken('API Token')->accessToken;
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token
-        ]);
+        return ApiResponseService::successResponse(
+            data: [
+                'user' => $user,
+                'token' => $token,
+            ],
+            operation: 'login'
+        );
     }
+
 
     public function logout(Request $request)
     {
