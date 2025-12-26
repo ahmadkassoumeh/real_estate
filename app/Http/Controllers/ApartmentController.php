@@ -12,11 +12,11 @@ use App\Http\Resources\ApartmentResource;
 
 class ApartmentController extends Controller
 {
-     public function __construct(
+    public function __construct(
         private ApartmentService $apartmentService
     ) {}
 
-     public function dashboard()
+    public function dashboard()
     {
         $data = $this->apartmentService->dashboard();
 
@@ -28,7 +28,12 @@ class ApartmentController extends Controller
 
     public function store(StoreApartmentRequest $request)
     {
-        $apartment = $this->apartmentService->store($request->validated());
+        $this->authorize('create', Apartment::class);
+        
+        $data = $request->validated();
+        $apartment = $this->apartmentService->store($data);
+        return ApiResponseService::createdResponse(
+            data: new ApartmentResource($apartment)
+        );
     }
-    
 }

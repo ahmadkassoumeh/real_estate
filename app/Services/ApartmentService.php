@@ -23,23 +23,22 @@ class ApartmentService
         ];
     }
 
-    public function store($request): Apartment
+    public function store(array $data): Apartment
     {
+        
         $apartment = Apartment::create([
             'owner_id' => Auth::id(),
-            'area_id' => $request->area_id,
-            'price' => $request->price,
-            'space' => $request->space,
-            'rooms_count' => $request->rooms_count,
-            'direction' => $request->direction,
-            'description' => $request->description,
+            'area_id' => $data['area_id'],
+            'price' => $data['price'],
+            'space' => $data['space'],
+            'rooms_count' => $data['rooms_count'],
+            'direction' => $data['direction'],
+            'description' => $data['description'],
         ]);
 
-        $ownerId = Auth::id();
-
-        foreach ($request->file('images') as $image) {
+        foreach ($data['images'] as $image) {
             $path = $image->store(
-                "{$ownerId}/{$apartment->id}",
+                Auth::id() . '/' . $apartment->id,
                 'apartment'
             );
 
@@ -50,6 +49,5 @@ class ApartmentService
 
         return $apartment;
     }
-
     
 }

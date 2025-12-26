@@ -4,9 +4,11 @@ namespace App\Enums;
 
 enum ReservationStatusEnum: string
 {
-    case ACTIVE = 'active';
+    case PENDING = 'pending';
+    case APPROVED = 'approved';
     case CANCELLED = 'cancelled';
     case COMPLETED = 'completed';
+    case REJECTED  = 'rejected'; 
 
     public function label(): string
     {
