@@ -5,40 +5,60 @@ namespace App\Http\Controllers;
 use App\Models\Reservation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Services\ReservationService;
+use App\Http\Requests\StoreReservationRequest;
+use App\Http\Requests\UpdateReservationRequest;
+use App\Utilities\ApiResponseService;
+use App\Models\Apartment;
+use App\Http\Resources\ReservationResource;
+use App\Http\Resources\OwnerReservationResource;
 
 class ReservationController extends Controller
 {
-    public function store(Request $request)
+    public function __construct(
+        private ReservationService $reservationService
+    ) {}
+
+    public function store(StoreReservationRequest $request, Apartment $apartment)
     {
-        $request->validate([
-            'apartment_id' => 'required|exists:apartments,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-        ]);
+        $this->authorize('create', Reservation::class);
+        $data = $request->validated();
+        $reservation = $this->reservationService->store($apartment, $data);
+        return ApiResponseService::createdResponse(
+            data: $reservation
+        );
+    }
 
-        // منع تداخل الحجوزات
-        $conflict = Reservation::where('apartment_id', $request->apartment_id)
-            ->where('status', 'active')
-            ->where(function ($q) use ($request) {
-                $q->whereBetween('start_date', [$request->start_date, $request->end_date])
-                    ->orWhereBetween('end_date', [$request->start_date, $request->end_date])
-                    ->orWhere(function ($q) use ($request) {
-                        $q->where('start_date', '<=', $request->start_date)
-                            ->where('end_date', '>=', $request->end_date);
-                    });
-            })->exists();
+    public function update(UpdateReservationRequest $request, Reservation $reservation)
+    {
+        $this->authorize('update', $reservation);
 
-        if ($conflict) {
-            return response()->json([
-                'message' => 'الشقة محجوزة ضمن هذه الفترة'
-            ], 422);
-        }
+        $reservation = $this->reservationService
+            ->update($reservation, $request->validated());
 
-        return Reservation::create([
-            'apartment_id' => $request->apartment_id,
-            'user_id' => Auth::id(),
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-        ]);
+        return ApiResponseService::successResponse(
+            ReservationResource::make($reservation)
+        );
+    }
+
+
+    public function cancel(Reservation $reservation)
+    {
+        $this->authorize('delete', $reservation);
+
+        $this->reservationService->cancel($reservation);
+
+        return ApiResponseService::successResponse(
+            msg: 'تم إلغاء الحجز بنجاح'
+        );
+    }
+
+    public function ownerPendingReservations()
+    {
+        $reservations = $this->reservationService->pendingReservationsForOwner();
+
+        return ApiResponseService::successResponse(
+            OwnerReservationResource::collection($reservations)
+        );
     }
 }

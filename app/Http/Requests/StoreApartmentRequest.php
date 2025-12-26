@@ -26,9 +26,9 @@ class StoreApartmentRequest extends FormRequest
         return [
             'area_id' => 'required|exists:areas,id',
 
-            'governorate_id' => 'required|exists:governorates,id',
+            // 'governorate_id' => 'required|exists:governorates,id',
 
-            'owner_id' => 'required|exists:users,id',
+            // 'owner_id' => 'required|exists:users,id',
 
             'price' => 'required|numeric|min:0',
 
@@ -45,7 +45,7 @@ class StoreApartmentRequest extends FormRequest
             'description' => 'required|string|max:1000',
 
             'images' => 'required|array|min:1',
-            'images.*' => 'image|mimes:jpg,jpeg,png|max:4096',
+            'images.*' => 'image|mimes:jpg,jpeg,png,webp,jpeg|max:4096',
         ];
     }
 }

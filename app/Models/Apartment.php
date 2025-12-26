@@ -57,7 +57,7 @@ class Apartment extends Model
     public function currentReservation()
     {
         return $this->hasOne(Reservation::class)
-            ->where('status', ReservationStatusEnum::ACTIVE->value)
+            ->where('status', ReservationStatusEnum::APPROVED->value)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now());
     }
@@ -77,6 +77,11 @@ class Apartment extends Model
     public function scopeLatestApartments($query)
     {
         return $query->latest();
+    }
+
+    public function details()
+    {
+        return $this->hasOne(ReservationDetail::class);
     }
 
     

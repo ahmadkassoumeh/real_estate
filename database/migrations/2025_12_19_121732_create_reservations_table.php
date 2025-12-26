@@ -17,12 +17,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('apartment_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->date('check_in');
+            $table->date('check_out');
             $table->enum(
                 'status',
                 EnumHelper::getEnumValues(ReservationStatusEnum::class)
-            )->default(ReservationStatusEnum::ACTIVE->value);
+            )->default(ReservationStatusEnum::PENDING->value);
             $table->foreignId('cancelled_by')
                 ->nullable()
                 ->constrained('users')

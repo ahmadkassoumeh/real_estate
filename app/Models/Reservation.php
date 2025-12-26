@@ -10,15 +10,15 @@ class Reservation extends Model
     protected $fillable = [
         'apartment_id',
         'user_id',
-        'start_date',
-        'end_date',
+        'check_in',
+        'check_out',
         'status'
     ];
 
     protected $casts = [
         'status' => ReservationStatusEnum::class,
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'check_in' => 'date',
+        'check_out' => 'date',
     ];
 
     public function apartment()
@@ -38,9 +38,9 @@ class Reservation extends Model
 
     public function scopeCurrent($query)
     {
-        return $query->where('status', ReservationStatusEnum::ACTIVE)
-            ->whereDate('start_date', '<=', now())
-            ->whereDate('end_date', '>=', now());
+        return $query->where('status', ReservationStatusEnum::APPROVED)
+            ->whereDate('check_in', '<=', now())
+            ->whereDate('check_out', '>=', now());
     }
 
     public function scopePast($query)
@@ -51,5 +51,10 @@ class Reservation extends Model
     public function scopeCancelled($query)
     {
         return $query->where('status', ReservationStatusEnum::CANCELLED);
+    }
+
+    public function details()
+    {
+        return $this->hasOne(ReservationDetail::class);
     }
 }
