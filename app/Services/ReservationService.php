@@ -10,6 +10,7 @@ use App\Models\ReservationDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\ReservationStatusNotification;
+use Carbon\CarbonPeriod;
 
 class ReservationService
 {
@@ -82,6 +83,10 @@ class ReservationService
 
     public function cancel(Reservation $reservation): void
     {
+        if ($reservation->status !== ReservationStatusEnum::PENDING->value) {
+            throw new \Exception('لا يمكن الغاء هذا الحجز');
+        }
+
         $reservation->update([
             'status' => ReservationStatusEnum::CANCELLED,
             'cancelled_by' => Auth::id(),
@@ -134,29 +139,100 @@ class ReservationService
         });
     }
 
-
-    public function reservedDates(Apartment $apartment)
+    public function approve(Reservation $reservation): Reservation
     {
+        if ($reservation->status !== ReservationStatusEnum::PENDING) {
+            throw new \Exception('لا يمكن الموافقة على هذا الحجز');
+        }
+
+        $reservation->update([
+            'status' => ReservationStatusEnum::APPROVED,
+        ]);
+
+        // tenant
+        $reservation->user->notify(
+            new ReservationStatusNotification(
+                $reservation,
+                'تم الموافقة على طلب الحجز'
+            )
+        );
+
+        // owner
+        $reservation->apartment->owner->notify(
+            new ReservationStatusNotification(
+                $reservation,
+                'لقد وافقت على طلب الحجز'
+            )
+        );
+
+        return $reservation->load([
+            'apartment.images',
+            'apartment.area.governorate',
+            'user',
+            'details',
+        ]);
+    }
+
+    public function reject(Reservation $reservation): Reservation
+    {
+        if ($reservation->status !== ReservationStatusEnum::PENDING) {
+            throw new \Exception('لا يمكن رفض هذا الحجز');
+        }
+
+        $reservation->update([
+            'status' => ReservationStatusEnum::REJECTED,
+        ]);
+
+        // tenant
+        $reservation->user->notify(
+            new ReservationStatusNotification(
+                $reservation,
+                'تم الموافقة على طلب الحجز'
+            )
+        );
+
+        // owner
+        $reservation->apartment->owner->notify(
+            new ReservationStatusNotification(
+                $reservation,
+                'لقد وافقت على طلب الحجز'
+            )
+        );
+
+        return $reservation;
+    }
+
+
+    public function reservedDates(Apartment $apartment): array
+    {
+        $today = Carbon::today();
+
         $reservations = $apartment->reservations()
             ->where('status', ReservationStatusEnum::APPROVED->value)
+            ->whereDate('check_out', '>=', $today) // من اليوم وطالع
             ->get(['check_in', 'check_out']);
 
         $dates = [];
 
         foreach ($reservations as $reservation) {
-            $period = \Carbon\CarbonPeriod::create(
-                $reservation->check_in,
-                $reservation->check_out->subDay() // لأن checkout غير محسوب
+
+            $start = Carbon::parse($reservation->check_in);
+
+            // إذا الحجز بلش قبل اليوم، نبدأ من اليوم
+            if ($start->lt($today)) {
+                $start = $today;
+            }
+
+            $period = CarbonPeriod::create(
+                $start,
+                Carbon::parse($reservation->check_out)->subDay()
             );
 
             foreach ($period as $date) {
-                $dates[] = $date->toDateString(); // 2025-12-21
+                $dates[] = $date->toDateString();
             }
         }
 
-        return response()->json([
-            'apartment_id' => $apartment->id,
-            'reserved_dates' => $dates
-        ]);
+        return array_values(array_unique($dates));
     }
 }

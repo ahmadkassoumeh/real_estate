@@ -53,6 +53,37 @@ class ReservationController extends Controller
         );
     }
 
+    public function approve(Reservation $reservation)
+    {
+        $this->authorize('approve', $reservation);
+
+        $reservation = $this->reservationService->approve($reservation);
+
+        return ApiResponseService::successResponse(
+            data: new OwnerReservationResource($reservation),
+            msg: 'تمت الموافقة على الحجز'
+        );
+    }
+
+    public function reject(Reservation $reservation)
+    {
+        $this->authorize('reject', $reservation);
+
+        $reservation = $this->reservationService->reject($reservation);
+
+        return ApiResponseService::successResponse(
+            msg: 'تم رفض الحجز'
+        );
+    }
+
+    public function reservedDates(Apartment $apartment)
+    {
+        return ApiResponseService::successResponse([
+            'apartment_id'   => $apartment->id,
+            'reserved_dates' => $this->reservationService->reservedDates($apartment),
+        ]);
+    }
+
     public function ownerPendingReservations()
     {
         $reservations = $this->reservationService->pendingReservationsForOwner();
