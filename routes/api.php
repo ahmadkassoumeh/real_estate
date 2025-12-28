@@ -22,32 +22,33 @@ Route::middleware('auth:api')->group(function () {
     Route::post('apartments', [ApartmentController::class, 'store']);
 
     //*  Reservation  *//
-    Route::post('apartments/{apartment}/reservations',[ReservationController::class, 'store']);
-    Route::post('reservations/{reservation}',[ReservationController::class, 'update']);
-    Route::post('reservations_cancel/{reservation}',[ReservationController::class, 'cancel']);
-
+    Route::post('apartments/{apartment}/reservations', [ReservationController::class, 'store']);
+    Route::post('reservations/{reservation}', [ReservationController::class, 'update']);
+    Route::post('reservations_cancel/{reservation}', [ReservationController::class, 'cancel']);
+    Route::get('apartments/{apartment}/reserved-dates',[ReservationController::class, 'reservedDates']);
 
     ////&  Notification  &////
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::get('notifications/unread', [NotificationController::class, 'unread']);
     Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-
 });
-
-
 
 ////////////!!  Owner  !!//////////
 Route::middleware(['auth:api', RoleMiddleware::class . ':owner'])->group(function () {
+
     Route::get(
         'owner/dashboard',
         [ReservationController::class, 'ownerPendingReservations']
     );
+
+    Route::post(
+        'owner/reservations/{reservation}/approve',
+        [ReservationController::class, 'approve']
+    );
+
+    Route::post(
+        'owner/reservations/{reservation}/reject',
+        [ReservationController::class, 'reject']
+    );
 });
 
-
-
-
-Route::get(
-    'apartments/{apartment}/reserved-dates',
-    [ApartmentController::class, 'reservedDates']
-);

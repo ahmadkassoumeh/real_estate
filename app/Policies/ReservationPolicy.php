@@ -5,6 +5,8 @@ namespace App\Policies;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
+use App\Enums\ReservationStatusEnum;
 
 class ReservationPolicy
 {
@@ -63,5 +65,21 @@ class ReservationPolicy
     public function forceDelete(User $user, Reservation $reservation): bool
     {
         return false;
+    }
+
+    public function approve(User $user, Reservation $reservation): bool
+    {
+        return
+            $user->hasRole('owner') &&
+            $reservation->apartment->owner_id === $user->id &&
+            $reservation->status === ReservationStatusEnum::PENDING;
+    }
+
+    public function reject(User $user, Reservation $reservation): bool
+    {
+        return
+            $user->hasRole('owner') &&
+            $reservation->apartment->owner_id === $user->id &&
+            $reservation->status === ReservationStatusEnum::PENDING;
     }
 }
