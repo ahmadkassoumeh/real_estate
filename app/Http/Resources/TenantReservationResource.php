@@ -1,54 +1,49 @@
 <?php
-
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Enums\ReservationStatusEnum;
 
-class OwnerReservationResource extends JsonResource
+class TenantReservationResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
         return [
-
             'reservation_id' => $this->id,
-            // الحجز
+
+            // التواريخ
             'check_in'  => $this->check_in,
             'check_out' => $this->check_out,
 
+            // الحالة
             'status' => [
                 'key'   => $this->status->value,
                 'label' => $this->status->label(),
             ],
 
-            // تفاصيل
+            // التفاصيل
             'details' => [
                 'adults'   => $this->details->adults_count,
                 'children' => $this->details->children_count,
                 'days'     => $this->details->days_count,
-                'total'    => $this->details->total_price,
+                'total'    => $this->details->total_cost,
             ],
 
             // الشقة
             'apartment' => new ApartmentResource($this->apartment),
 
-            // الزبون
-            'tenant' => [
-                'id' => $this->user->id,
-                'name' => $this->user->first_name . ' ' . $this->user->last_name,
-                'profile_image' => asset("storage/users/{$this->user->profile_image}")
+            // التقييم
+            'review' => [
+                'is_reviewed' => $this->review !== null,
+                'data' => $this->when(
+                    $this->review,
+                    fn () => [
+                        'rating' => $this->review->rating,
+                        'comment' => $this->review->comment,
+                    ]
+                ),
             ],
-
-            // آخر حجز قبله
-            'previous_reservation' => $this->when(
-                $this->previous_reservation,
-                fn() => [
-                    'check_out' => $this->previous_reservation->check_out,
-                ]
-            ),
-
-            // الفجوة
-            'gap_days_before' => $this->gap_days_before,
         ];
     }
 }

@@ -57,4 +57,9 @@ class Reservation extends Model
     {
         return $this->hasOne(ReservationDetail::class);
     }
+
+    public function review()
+    {
+        return $this->hasOne(ApartmentReview::class);
+    }
 }

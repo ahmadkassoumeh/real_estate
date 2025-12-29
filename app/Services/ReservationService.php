@@ -235,4 +235,41 @@ class ReservationService
 
         return array_values(array_unique($dates));
     }
+
+    public function tenantReservationHistory(): array
+    {
+        $userId = Auth::id();
+        $today = Carbon::today();
+
+        // 🔹 الحجز الحالي
+        $current = Reservation::with([
+            'apartment.images',
+            'apartment.area.governorate',
+            'details',
+            'review',
+        ])
+            ->where('user_id', $userId)
+            ->where('status', ReservationStatusEnum::APPROVED->value)
+            ->whereDate('check_in', '<=', $today)
+            ->whereDate('check_out', '>', $today)
+            ->first();
+
+        // 🔹 الحجوزات السابقة
+        $previous = Reservation::with([
+            'apartment.images',
+            'apartment.area.governorate',
+            'details',
+            'review',
+        ])
+            ->where('user_id', $userId)
+            ->where('status', ReservationStatusEnum::COMPLETED)
+            ->orderByDesc('check_out')
+            ->get();
+
+        return [
+            'current' => $current,
+            'previous' => $previous,
+        ];
+    }
+
 }

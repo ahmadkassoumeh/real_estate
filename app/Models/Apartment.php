@@ -47,6 +47,7 @@ class Apartment extends Model
         return $this->hasMany(ApartmentReview::class);
     }
 
+
     public function favorites()
     {
         return $this->belongsToMany(User::class, 'favorites');
@@ -83,6 +84,4 @@ class Apartment extends Model
     {
         return $this->hasOne(ReservationDetail::class);
     }
-
-    
 }
