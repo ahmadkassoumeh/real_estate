@@ -12,6 +12,7 @@ use App\Utilities\ApiResponseService;
 use App\Models\Apartment;
 use App\Http\Resources\ReservationResource;
 use App\Http\Resources\OwnerReservationResource;
+use App\Http\Resources\TenantReservationResource;
 
 class ReservationController extends Controller
 {
@@ -91,5 +92,19 @@ class ReservationController extends Controller
         return ApiResponseService::successResponse(
             OwnerReservationResource::collection($reservations)
         );
+    }
+
+    public function history(ReservationService $service)
+    {
+        $data = $this->reservationService->tenantReservationHistory();
+
+        return response()->json([
+            'current_reservation' => $data['current']
+                ? new TenantReservationResource($data['current'])
+                : null,
+
+            'previous_reservations' =>
+            TenantReservationResource::collection($data['previous']),
+        ]);
     }
 }

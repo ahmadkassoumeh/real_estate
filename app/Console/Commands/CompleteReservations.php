@@ -31,7 +31,7 @@ class CompleteReservations extends Command
     public function handle()
     {
         $reservations = Reservation::where('status', ReservationStatusEnum::APPROVED)
-            ->whereDate('check_out', '<', now())
+            ->whereDate('check_out', '<=', now())
             ->get();
 
         foreach ($reservations as $reservation) {
