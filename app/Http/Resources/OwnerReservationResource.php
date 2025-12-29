@@ -11,6 +11,7 @@ class OwnerReservationResource extends JsonResource
     {
         return [
 
+            'reservation_id' => $this->id,
             // الحجز
             'check_in'  => $this->check_in,
             'check_out' => $this->check_out,

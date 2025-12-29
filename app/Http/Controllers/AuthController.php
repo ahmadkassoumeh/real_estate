@@ -112,10 +112,12 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('API Token')->accessToken;
-
+        $userRole = $user->getRoleNames()->first();
+        
         return ApiResponseService::successResponse(
             data: [
                 'user' => $user,
+                'role' => $userRole,
                 'token' => $token,
             ],
             operation: 'login'
