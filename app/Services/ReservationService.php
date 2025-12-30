@@ -250,9 +250,10 @@ class ReservationService
         ])
             ->where('user_id', $userId)
             ->where('status', ReservationStatusEnum::APPROVED->value)
-            ->whereDate('check_in', '<=', $today)
-            ->whereDate('check_out', '>', $today)
-            ->first();
+            ->orWhere('status', ReservationStatusEnum::PENDING->value)
+            // ->whereDate('check_in', '<=', $today)
+            // ->whereDate('check_out', '>', $today)
+            ->get();
 
         // 🔹 الحجوزات السابقة
         $previous = Reservation::with([
