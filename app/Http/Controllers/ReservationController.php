@@ -100,7 +100,7 @@ class ReservationController extends Controller
 
         return response()->json([
             'current_reservation' => $data['current']
-                ? new TenantReservationResource($data['current'])
+                ? TenantReservationResource::collection($data['current'])
                 : null,
 
             'previous_reservations' =>
