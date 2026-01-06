@@ -16,12 +16,10 @@ class ApartmentService
         return [
             'featured' => Apartment::with(['mainImage', 'area'])
                 ->featured()
-                ->take(3)
                 ->get(),
 
             'latest' => Apartment::with(['mainImage', 'area'])
                 ->latestApartments()
-                ->take(3)
                 ->get(),
         ];
     }
