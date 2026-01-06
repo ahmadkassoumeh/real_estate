@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('apartment_reviews', function (Blueprint $table) {
+        Schema::create('friends', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('apartment_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->tinyInteger('rating'); // 1 - 5
-            $table->text('comment')->nullable();
+            $table->foreignId('friend_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
 
+            $table->unique(['user_id', 'friend_id']);
         });
     }
 
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('apartment_reviews');
+        Schema::dropIfExists('friends');
     }
 };

@@ -51,7 +51,6 @@ class StoreReservationRequest extends FormRequest
 
             $hasConflict = Reservation::where('apartment_id', $apartmentId)
                 ->whereIn('status', [
-                    ReservationStatusEnum::PENDING->value,
                     ReservationStatusEnum::APPROVED->value,
                 ])
                 ->where(function ($query) use ($checkIn, $checkOut) {

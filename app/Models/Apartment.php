@@ -77,7 +77,10 @@ class Apartment extends Model
 
     public function scopeLatestApartments($query)
     {
-        return $query->latest();
+        return $query->latest()
+            ->whereDoesntHave('area', function ($q) {
+                $q->where('is_featured', true);
+            });
     }
 
     public function details()

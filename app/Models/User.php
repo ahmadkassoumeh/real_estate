@@ -14,7 +14,7 @@ use App\Enums\UserStatusEnum;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens , HasRoles;
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -69,5 +69,15 @@ class User extends Authenticatable
     public function reviews()
     {
         return $this->hasMany(ApartmentReview::class);
+    }
+
+    public function friends()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'friends',
+            'user_id',
+            'friend_id'
+        );
     }
 }

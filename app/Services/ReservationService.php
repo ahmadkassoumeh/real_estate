@@ -83,7 +83,7 @@ class ReservationService
 
     public function cancel(Reservation $reservation): void
     {
-        if ($reservation->status !== ReservationStatusEnum::PENDING->value) {
+        if ($reservation->status !== ReservationStatusEnum::PENDING) {
             throw new \Exception('لا يمكن الغاء هذا الحجز');
         }
 

@@ -17,8 +17,8 @@ class Reservation extends Model
 
     protected $casts = [
         'status' => ReservationStatusEnum::class,
-        'check_in' => 'date',
-        'check_out' => 'date',
+        'check_in' => 'date:Y-m-d',
+        'check_out' => 'date:Y-m-d',
     ];
 
     public function apartment()

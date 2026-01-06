@@ -9,6 +9,8 @@ use App\Http\Controllers\NotificationController;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use App\Http\Controllers\LocationController;
 use Spatie\Permission\Models\Role;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\FriendController;
 
 // 🔓 بدون توكن
 Route::post('register', [AuthController::class, 'register']);
@@ -47,6 +49,13 @@ Route::middleware('auth:api')->group(function () {
     // Location
     Route::get(
     'locations',[LocationController::class, 'index']);
+
+    //***** Chat *****//
+    Route::post('/addfriend', [FriendController::class, 'add']);
+    Route::get('/users', [ChatController::class, 'users']);
+    Route::post('/messages/send', [ChatController::class, 'sendMessage']);
+    Route::get('/messages/{userId}', [ChatController::class, 'getMessages']);
+    Route::get('/messages/unread/count', [ChatController::class, 'unreadCount']);
 
 });
 

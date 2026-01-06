@@ -17,8 +17,8 @@ class ReservationResource extends JsonResource
         return [
 
             // التواريخ
-            'check_in'  => $this->check_in,
-            'check_out' => $this->check_out,
+            'check_in'  => $this->check_in->format('Y-m-d'),
+            'check_out' => $this->check_out->format('Y-m-d'),
 
             // تفاصيل الحجز
             'adults_count'   => $this->details->adults_count,
