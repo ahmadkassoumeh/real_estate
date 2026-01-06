@@ -17,7 +17,7 @@ class ChatController extends Controller
         $currentUserId = $request->user()->id;
 
         $friendIds = Friend::where('user_id', $currentUserId)
-        ->pluck('friend_id');
+            ->pluck('friend_id');
 
         $users = User::whereIn('id', $friendIds)
             ->select('id', 'username', 'email', 'created_at')
@@ -30,10 +30,10 @@ class ChatController extends Controller
 
                 $lastMessage = Message::where(function ($query) use ($currentUserId, $user) {
                     $query->where('sender_id', $currentUserId)
-                          ->where('receiver_id', $user->id);
+                        ->where('receiver_id', $user->id);
                 })->orWhere(function ($query) use ($currentUserId, $user) {
                     $query->where('sender_id', $user->id)
-                          ->where('receiver_id', $currentUserId);
+                        ->where('receiver_id', $currentUserId);
                 })->latest()->first();
                 //
 
@@ -66,22 +66,34 @@ class ChatController extends Controller
             'message' => $request->message,
         ]);
 
-       
-        return response()->json($message->load(['sender', 'receiver']), 201);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $message->id,
+                'message' => $message->message,
+                'sender' => [
+                    'id' => $message->sender->id,
+                    'name' => $message->sender->username,
+                ],
+                'receiver_id' => $message->receiver_id,
+                'createdAt' => $message->created_at,
+            ]
+        ], 201);
     }
 
     public function getMessages(Request $request, $userId)
     {
         $messages = Message::where(function ($query) use ($request, $userId) {
             $query->where('sender_id', $request->user()->id)
-                  ->where('receiver_id', $userId);
+                ->where('receiver_id', $userId);
         })->orWhere(function ($query) use ($request, $userId) {
             $query->where('sender_id', $userId)
-                  ->where('receiver_id', $request->user()->id);
+                ->where('receiver_id', $request->user()->id);
         })
-        ->with(['sender', 'receiver'])
-        ->orderBy('created_at', 'asc')
-        ->get();
+            ->with(['sender', 'receiver'])
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         // تعليم الرسائل كمقروءة
         Message::where('sender_id', $userId)

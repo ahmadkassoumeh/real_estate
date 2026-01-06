@@ -263,7 +263,11 @@ class ReservationService
             'review',
         ])
             ->where('user_id', $userId)
-            ->where('status', ReservationStatusEnum::COMPLETED)
+            ->whereIn('status', [
+                ReservationStatusEnum::COMPLETED->value,
+                ReservationStatusEnum::CANCELLED->value,
+                ReservationStatusEnum::REJECTED->value
+            ])
             ->orderByDesc('check_out')
             ->get();
 
@@ -272,5 +276,4 @@ class ReservationService
             'previous' => $previous,
         ];
     }
-
 }
