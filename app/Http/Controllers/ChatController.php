@@ -35,6 +35,7 @@ class ChatController extends Controller
                     $query->where('sender_id', $user->id)
                           ->where('receiver_id', $currentUserId);
                 })->latest()->first();
+                //
 
                 return [
                     'id' => $user->id,
