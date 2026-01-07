@@ -20,7 +20,7 @@ class ChatController extends Controller
             ->pluck('friend_id');
 
         $users = User::whereIn('id', $friendIds)
-            ->select('id', 'username', 'email', 'created_at' , 'profile_image')
+            ->select('id', 'username', 'email', 'created_at', 'profile_image')
             ->get()
             ->map(function ($user) use ($currentUserId) {
                 $unreadCount = Message::where('sender_id', $user->id)
@@ -87,6 +87,8 @@ class ChatController extends Controller
     public function getMessages(Request $request, $userId)
     {
         $authUser = $request->user();
+        $chatUser = User::select('id', 'username', 'profile_image')
+            ->findOrFail($userId);
 
         $messages = Message::where(function ($query) use ($authUser, $userId) {
             $query->where('sender_id', $authUser->id)
@@ -122,8 +124,14 @@ class ChatController extends Controller
 
         return response()->json([
             'success' => true,
-            'chat' => [
-                'with_user_id' => (int) $userId,
+            'current_user_id' => [
+                'user_id' => (int) $authUser->id,
+                'name' => $authUser->username,
+            ],
+            'chat_with_user' => [
+                'user_id' => (int) $userId,
+                'name' => $chatUser->username,
+                'profile_image_url' =>  asset('storage/users/' . $chatUser->profile_image),
             ],
             'messages' => $messages,
         ]);
