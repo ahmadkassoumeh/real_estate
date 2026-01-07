@@ -66,6 +66,7 @@ class ChatController extends Controller
             'message' => $request->message,
         ]);
 
+        broadcast(new MessageSent($message))->toOthers();
 
         return response()->json([
             'success' => true,
@@ -84,25 +85,49 @@ class ChatController extends Controller
 
     public function getMessages(Request $request, $userId)
     {
-        $messages = Message::where(function ($query) use ($request, $userId) {
-            $query->where('sender_id', $request->user()->id)
+        $authUser = $request->user();
+
+        $messages = Message::where(function ($query) use ($authUser, $userId) {
+            $query->where('sender_id', $authUser->id)
                 ->where('receiver_id', $userId);
-        })->orWhere(function ($query) use ($request, $userId) {
-            $query->where('sender_id', $userId)
-                ->where('receiver_id', $request->user()->id);
         })
-            ->with(['sender', 'receiver'])
+            ->orWhere(function ($query) use ($authUser, $userId) {
+                $query->where('sender_id', $userId)
+                    ->where('receiver_id', $authUser->id);
+            })
+            ->with('sender:id,username')
             ->orderBy('created_at', 'asc')
-            ->get();
+            ->get()
+            ->map(function ($message) use ($authUser) {
+                return [
+                    'id' => $message->id,
+                    'message' => $message->message,
+                    'sender_id' => $message->sender_id,
+                    'receiver_id' => $message->receiver_id,
+                    'is_mine' => $message->sender_id === $authUser->id,
+                    'created_at' => $message->created_at->toDateTimeString(),
+                    'sender' => [
+                        'id' => $message->sender->id,
+                        'name' => $message->sender->username,
+                    ],
+                ];
+            });
 
         // تعليم الرسائل كمقروءة
         Message::where('sender_id', $userId)
-            ->where('receiver_id', $request->user()->id)
+            ->where('receiver_id', $authUser->id)
             ->where('is_read', false)
             ->update(['is_read' => true]);
 
-        return response()->json($messages);
+        return response()->json([
+            'success' => true,
+            'chat' => [
+                'with_user_id' => (int) $userId,
+            ],
+            'messages' => $messages,
+        ]);
     }
+
 
     // عدد الرسائل غير المقروءة الكلي
     public function unreadCount(Request $request)
