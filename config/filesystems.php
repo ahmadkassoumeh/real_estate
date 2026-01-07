@@ -63,7 +63,7 @@ return [
         'users' => [
             'driver' => 'local',
             'root' => storage_path('app/public/users'),
-            'visibility' => 'private',
+            'visibility' => 'public',
         ],
 
         'apartment' => [

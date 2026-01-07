@@ -20,7 +20,7 @@ class ChatController extends Controller
             ->pluck('friend_id');
 
         $users = User::whereIn('id', $friendIds)
-            ->select('id', 'username', 'email', 'created_at')
+            ->select('id', 'username', 'email', 'created_at' , 'profile_image')
             ->get()
             ->map(function ($user) use ($currentUserId) {
                 $unreadCount = Message::where('sender_id', $user->id)
@@ -43,6 +43,7 @@ class ChatController extends Controller
                     'email' => $user->email,
                     'unread_count' => $unreadCount,
                     'last_message_at' => $lastMessage ? $lastMessage->created_at : null,
+                    'profile_image_url' => asset('storage/users/' . $user->profile_image),
                 ];
             })
             // ترتيب حسب آخر رسالة (الأحدث أولاً)
