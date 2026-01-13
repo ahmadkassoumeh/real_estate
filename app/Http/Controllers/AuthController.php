@@ -106,6 +106,12 @@ class AuthController extends Controller
             );
         }
 
+         if ($user->status === UserStatusEnum::REJECTED) {
+            return ApiResponseService::unauthorizedResponse(
+                msg: 'الحساب قد تم رفضه من قبل الادارة'
+            );
+        }
+
         // 👈 هون المهم
         if ($user->status !== UserStatusEnum::APPROVED) {
             return ApiResponseService::unauthorizedResponse(

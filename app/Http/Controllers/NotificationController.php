@@ -10,10 +10,19 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
+        $user = $request->user();
+
+        // كل الإشعارات
+        $notifications = $user->notifications;
+
+        // الإشعارات غير المقروءة
+        $user->unreadNotifications->markAsRead();
+
         return ApiResponseService::successResponse(
-            NotificationResource::collection($request->user()->notifications)
+            NotificationResource::collection($notifications)
         );
     }
+
 
     public function unread(Request $request)
     {
