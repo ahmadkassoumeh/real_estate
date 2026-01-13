@@ -13,8 +13,8 @@ class TenantReservationResource extends JsonResource
             'reservation_id' => $this->id,
 
             // التواريخ
-            'check_in'  => $this->check_in,
-            'check_out' => $this->check_out,
+            'check_in'  => $this->check_informat('Y-m-d'),
+            'check_out' => $this->check_outformat('Y-m-d'),
 
             // الحالة
             'status' => [

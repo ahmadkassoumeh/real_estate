@@ -47,13 +47,6 @@ class Apartment extends Model
         return $this->hasMany(ApartmentReview::class);
     }
 
-
-    public function favorites()
-    {
-        return $this->belongsToMany(User::class, 'favorites');
-    }
-
-
     // الحجز الحالي
     public function currentReservation()
     {
@@ -86,5 +79,18 @@ class Apartment extends Model
     public function details()
     {
         return $this->hasOne(ReservationDetail::class);
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function favoritedByUsers()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'favorites'
+        )->withTimestamps();
     }
 }

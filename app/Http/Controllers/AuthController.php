@@ -26,8 +26,8 @@ class AuthController extends Controller
 
             'role' => 'required|in:owner,tenant',
 
-            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'id_card_image' => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
+            'profile_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'id_card_image' => 'required|image|mimes:jpg,jpeg,png|max:4096',
         ]);
 
         if ($validator->fails()) {

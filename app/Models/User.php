@@ -62,11 +62,6 @@ class User extends Authenticatable
         return $this->hasMany(Reservation::class);
     }
 
-    public function favoriteApartments()
-    {
-        return $this->belongsToMany(Apartment::class, 'favorites');
-    }
-
     public function reviews()
     {
         return $this->hasMany(ApartmentReview::class);
@@ -81,4 +76,18 @@ class User extends Authenticatable
             'friend_id'
         );
     }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function favoriteApartments()
+    {
+        return $this->belongsToMany(
+            Apartment::class,
+            'favorites'
+        )->withTimestamps();
+    }
+
 }

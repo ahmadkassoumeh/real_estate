@@ -11,6 +11,8 @@ use App\Http\Controllers\LocationController;
 use Spatie\Permission\Models\Role;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\FriendController;
+use App\Http\Controllers\FavoriteController;
+
 
 // 🔓 بدون توكن
 Route::post('register', [AuthController::class, 'register']);
@@ -71,6 +73,17 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/messages/send', [ChatController::class, 'sendMessage']);
     Route::get('/messages/{userId}', [ChatController::class, 'getMessages']);
     Route::get('/messages/unread/count', [ChatController::class, 'unreadCount']);
+
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^ favorite   ^^^^^^^^^^^66^^^^^^^^^^^^^//
+    Route::post(
+        'apartments/{apartment}/favorite',
+        [FavoriteController::class, 'toggle']
+    );
+
+    Route::get(
+        'favorites',
+        [FavoriteController::class, 'index']
+    );
 });
 
 ////////////!!  Owner  !!//////////
