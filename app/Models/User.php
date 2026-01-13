@@ -30,6 +30,7 @@ class User extends Authenticatable
         'id_card_image',
         'profile_image',
         'status',
+        'phone_number',
         'password',
     ];
 

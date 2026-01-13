@@ -13,6 +13,7 @@ class OwnerSeeder extends Seeder
     {
         $owner = User::create([
             'email' => 'owner@test.com',
+            'phone' => '0123456789',
             'username' => 'owner1',
             'first_name' => 'Owner',
             'last_name' => 'User',

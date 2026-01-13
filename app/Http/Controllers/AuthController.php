@@ -16,6 +16,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'phone_number' => 'required|string|max:20|unique:users,phone_number',
             'email' => 'nullable|email|unique:users,email',
             'username' => 'required|string|max:50|unique:users,username',
             'first_name' => 'required|string|max:100',
@@ -38,6 +39,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'email' => $request->email,
+            'phone_number' => $request->phone_number,
             'username' => $request->username,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -86,7 +88,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'phone_number' => 'required|string',
             'password' => 'required',
         ]);
 
@@ -96,7 +98,7 @@ class AuthController extends Controller
             );
         }
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('phone_number', $request->phone_number)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return ApiResponseService::unauthorizedResponse(
@@ -113,7 +115,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('API Token')->accessToken;
         $userRole = $user->getRoleNames()->first();
-        
+
         return ApiResponseService::successResponse(
             data: [
                 'user' => $user,
