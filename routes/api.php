@@ -32,7 +32,7 @@ Route::middleware('auth:api')->group(function () {
         [ApartmentController::class, 'storeReview']
     );
 
-    Route::get('tenant/reservations/history',[ReservationController::class, 'history'])->middleware(RoleMiddleware::class . ':tenant');
+    Route::get('tenant/reservations/history', [ReservationController::class, 'history'])->middleware(RoleMiddleware::class . ':tenant');
 
 
     //*  Reservation  *//
@@ -40,15 +40,30 @@ Route::middleware('auth:api')->group(function () {
     Route::post('reservations/{reservation}', [ReservationController::class, 'update']);
     Route::post('reservations_cancel/{reservation}', [ReservationController::class, 'cancel']);
     Route::get('apartments/{apartment}/reserved-dates', [ReservationController::class, 'reservedDates']);
+    Route::post(
+        'reservation-update-requests/{reservationUpdateRequest}/approve',
+        [ReservationController::class, 'approvedReservationUpdateRequest']
+    );
+
+    Route::post(
+        'reservation-update-requests/{reservationUpdateRequest}/reject',
+        [ReservationController::class, 'rejectedReservationUpdateRequest']
+    );
+
+    Route::get('list-reservation-update-requests', [ReservationController::class, 'updateRequests']);
+
 
     ////&  Notification  &////
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::get('notifications/unread', [NotificationController::class, 'unread']);
     Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
 
     // Location
     Route::get(
-    'locations',[LocationController::class, 'index']);
+        'locations',
+        [LocationController::class, 'index']
+    );
 
     //***** Chat *****//
     Route::post('/addfriend', [FriendController::class, 'add']);
@@ -56,7 +71,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/messages/send', [ChatController::class, 'sendMessage']);
     Route::get('/messages/{userId}', [ChatController::class, 'getMessages']);
     Route::get('/messages/unread/count', [ChatController::class, 'unreadCount']);
-
 });
 
 ////////////!!  Owner  !!//////////

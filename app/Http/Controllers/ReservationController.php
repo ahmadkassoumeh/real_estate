@@ -13,6 +13,8 @@ use App\Models\Apartment;
 use App\Http\Resources\ReservationResource;
 use App\Http\Resources\OwnerReservationResource;
 use App\Http\Resources\TenantReservationResource;
+use App\Models\ReservationUpdateRequest as UpdateRequest;
+use App\Http\Resources\ReservationUpdateRequestResource;
 
 class ReservationController extends Controller
 {
@@ -107,4 +109,39 @@ class ReservationController extends Controller
             TenantReservationResource::collection($data['previous']),
         ]);
     }
+
+    public function approvedReservationUpdateRequest(UpdateRequest $reservationUpdateRequest)
+    {
+        $reservation = $this->reservationService->approveUpdateRequest($reservationUpdateRequest);
+
+        return ApiResponseService::successResponse([
+            'reservation_id' => $reservation->id,
+            'update_request_id' => $reservationUpdateRequest->id,
+            'status' => 'approved',
+            'reservation' => new ReservationResource($reservation),
+        ], __('Reservation update request approved successfully'));
+    }
+
+
+    public function rejectedReservationUpdateRequest(UpdateRequest $reservationUpdateRequest)
+    {
+        $this->reservationService->rejectUpdateRequest($reservationUpdateRequest);
+
+        return ApiResponseService::successResponse([
+            'update_request_id' => $reservationUpdateRequest->id,
+            'reservation_id' => $reservationUpdateRequest->reservation_id,
+            'status' => 'rejected',
+        ], __('Reservation update request rejected successfully'));
+    }
+
+    public function updateRequests(Request $request)
+    {
+        $requests = $this->reservationService
+            ->getUpdateRequestsForOwner($request->user());
+
+        return ApiResponseService::successResponse(
+            ReservationUpdateRequestResource::collection($requests)
+        );
+    }
+
 }

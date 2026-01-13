@@ -23,6 +23,9 @@ Route::middleware(['auth:web', EnsureAdmin::class])
     ->prefix('admin')
     ->group(function () {
 
+        Route::get('/users', [LoginWebController::class, 'index2'])->name('admin.users.index');
+        Route::delete('/users/{user}', [LoginWebController::class, 'destroy'])->name('admin.users.destroy');
+        
         Route::get('/users/pending', [LoginWebController::class, 'index'])
             ->name('admin.users.pending');
 
@@ -30,26 +33,22 @@ Route::middleware(['auth:web', EnsureAdmin::class])
 
         Route::post('/users/{user}/reject', [LoginWebController::class, 'reject']);
 
-        Route::get('/user-image/{userId}/{type}', function($userId, $type) {
+        Route::get('/user-image/{userId}/{type}', function ($userId, $type) {
             $disk = Storage::disk('users');
-            
+
             if ($type === 'profile') {
                 $path = "{$userId}/profile";
             } else {
                 $path = "{$userId}/id-card";
             }
-            
+
             $files = $disk->files($path);
             if (empty($files)) {
                 abort(404);
             }
-            
+
             $file = $files[0];
             return response($disk->get($file))
                 ->header('Content-Type', $disk->mimeType($file));
         })->name('admin.user.image');
-
     });
-
-
-    Route::get('/apartments/{apartment}', [LoginWebController::class, 'showImages']);

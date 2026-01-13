@@ -13,8 +13,8 @@ class OwnerReservationResource extends JsonResource
 
             'reservation_id' => $this->id,
             // الحجز
-            'check_in'  => $this->check_in,
-            'check_out' => $this->check_out,
+            'check_in'  => $this->check_in->format('Y-m-d'),
+            'check_out' => $this->check_out->format('Y-m-d'),
 
             'status' => [
                 'key'   => $this->status->value,

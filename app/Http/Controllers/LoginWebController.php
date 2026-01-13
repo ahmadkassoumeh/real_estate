@@ -10,6 +10,38 @@ use App\Models\Apartment;
 
 class LoginWebController extends Controller
 {
+    // في AdminController
+public function index2(Request $request)
+{
+    $users = User::with('roles')
+        ->orderBy('created_at', 'desc')
+        ->paginate(15);
+    
+    $totalUsers = User::count();
+    $ownersCount = User::role('owner')->count();
+    $tenantsCount = User::role('tenant')->count();
+    $activeUsers = User::where('status', 'active')->count();
+    
+    return view('admin.users.index', compact(
+        'users', 
+        'totalUsers', 
+        'ownersCount', 
+        'tenantsCount', 
+        'activeUsers'
+    ));
+}
+
+public function destroy(User $user)
+{
+    try {
+        $user->delete();
+        return redirect()->route('admin.users.index')
+            ->with('success', 'تم حذف المستخدم بنجاح.');
+    } catch (\Exception $e) {
+        return redirect()->back()
+            ->with('error', 'حدث خطأ أثناء حذف المستخدم.');
+    }
+}
     public function showLoginForm()
     {
         return view('auth.login');

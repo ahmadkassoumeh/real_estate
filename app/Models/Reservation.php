@@ -21,6 +21,11 @@ class Reservation extends Model
         'check_out' => 'date:Y-m-d',
     ];
 
+    public function updateRequests()
+    {
+        return $this->hasMany(ReservationUpdateRequest::class);
+    }
+
     public function apartment()
     {
         return $this->belongsTo(Apartment::class);

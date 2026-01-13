@@ -25,9 +25,9 @@ class UpdateReservationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'check_in' => ['required', 'date', 'after_or_equal:today'],
-            'check_out' => ['required', 'date', 'after:check_in'],
-            'adults_count' => ['required', 'integer', 'min:1'],
+            'check_in' => ['nullable', 'date', 'after_or_equal:today'],
+            'check_out' => ['nullable', 'date', 'after:check_in'],
+            'adults_count' => ['nullable', 'integer', 'min:1'],
             'children_count' => ['nullable', 'integer', 'min:0'],
         ];
     }
@@ -37,13 +37,30 @@ class UpdateReservationRequest extends FormRequest
         $validator->after(function ($validator) {
 
             $reservation = $this->route('reservation');
+
+            //  إذا ما في تعديل على التاريخ → لا نتحقق من التعارض
+            if (! $this->filled('check_in') && ! $this->filled('check_out')) {
+                return;
+            }
+
             $apartmentId = $reservation->apartment_id;
 
-            $checkIn  = $this->check_in;
-            $checkOut = $this->check_out;
+            // 🟢 تحديد القيم النهائية للتاريخ
+            $checkIn = $this->filled('check_in')
+                ? $this->check_in
+                : $reservation->check_in;
+
+            $checkOut = $this->filled('check_out')
+                ? $this->check_out
+                : $reservation->check_out;
+
+
+            if (! $checkIn || ! $checkOut) {
+                return;
+            }
 
             $hasConflict = Reservation::where('apartment_id', $apartmentId)
-                ->where('id', '!=', $reservation->id)   // Exclude the current reservation
+                ->where('id', '!=', $reservation->id)
                 ->whereIn('status', [
                     ReservationStatusEnum::PENDING->value,
                     ReservationStatusEnum::APPROVED->value,
@@ -62,6 +79,5 @@ class UpdateReservationRequest extends FormRequest
             }
         });
     }
-
 
 }

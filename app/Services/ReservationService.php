@@ -10,6 +10,7 @@ use App\Models\ReservationDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\ReservationStatusNotification;
+use App\Models\ReservationUpdateRequest;
 use Carbon\CarbonPeriod;
 
 class ReservationService
@@ -54,7 +55,37 @@ class ReservationService
         return $reservation;
     }
 
-    public function update(Reservation $reservation, array $data): Reservation
+    public function update(Reservation $reservation, array $data)
+    {
+        // 🔴 إذا الحجز Approved → طلب تعديل
+        if ($reservation->status === ReservationStatusEnum::APPROVED) {
+
+            $days = Carbon::parse($reservation->check_in)
+                ->diffInDays(Carbon::parse($data['check_out']));
+
+            ReservationUpdateRequest::create([
+                'reservation_id' => $reservation->id,
+                'new_check_in' => $reservation->check_in,
+                'new_check_out' => $data['check_out'],
+                'new_adults_count' => $data['adults_count'],
+                'new_children_count' => $data['children_count'] ?? 0,
+                'new_days_count' => $days,
+                'new_total_cost' => $days * $reservation->apartment->price,
+            ]);
+
+            return $reservation->load([
+                'apartment.area',
+                'apartment.images',
+                'user',
+                'details',
+            ]);
+        }
+
+        return $this->directUpdate($reservation, $data);
+    }
+
+
+    private function directUpdate(Reservation $reservation, array $data): Reservation
     {
         $days = Carbon::parse($data['check_in'])
             ->diffInDays(Carbon::parse($data['check_out']));
@@ -64,22 +95,62 @@ class ReservationService
             'check_out' => $data['check_out'],
         ]);
 
-        $reservationDetails = ReservationDetail::where('reservation_id', $reservation->id)->first();
-
-        $reservationDetails->update([
+        $reservation->details->update([
             'adults_count' => $data['adults_count'],
             'children_count' => $data['children_count'] ?? 0,
             'days_count' => $days,
             'total_cost' => $days * $reservation->apartment->price,
         ]);
 
-        return $reservation->load([
+        $reservation->load([
             'apartment.area',
             'apartment.images',
             'user',
             'details',
         ]);
+
+        return $reservation->refresh();
     }
+
+    public function approveUpdateRequest(ReservationUpdateRequest $request)
+    {
+        if ($request->status !== 'pending') {
+            throw new \Exception('تم التعامل مع الطلب مسبقًا');
+        }
+
+        $reservation = $request->reservation;
+
+        // تحديث الحجز
+        $reservation->update([
+            'check_out' => $request->new_check_out,
+        ]);
+
+        $reservation->details->update([
+            'adults_count' => $request->new_adults_count,
+            'children_count' => $request->new_children_count,
+            'days_count' => $request->new_days_count,
+            'total_cost' => $request->new_total_cost,
+        ]);
+
+        $request->update([
+            'status' => 'approved',
+        ]);
+
+        return $reservation;
+    }
+
+    public function rejectUpdateRequest(ReservationUpdateRequest $request)
+    {
+        if ($request->status !== 'pending') {
+            throw new \Exception('تم التعامل مع الطلب مسبقًا');
+        }
+
+        $request->update([
+            'status' => 'rejected',
+        ]);
+    }
+
+
 
     public function cancel(Reservation $reservation): void
     {
@@ -276,4 +347,21 @@ class ReservationService
             'previous' => $previous,
         ];
     }
+
+    public function getUpdateRequestsForOwner(User $owner)
+    {
+        return ReservationUpdateRequest::query()
+            ->where('status', 'pending')
+            ->whereHas('reservation.apartment', function ($q) use ($owner) {
+                $q->where('owner_id', $owner->id);
+            })
+            ->with([
+                'reservation.details',
+                'reservation.apartment.images',
+                'reservation.user',
+            ])
+            ->latest()
+            ->get();
+    }
+    
 }
